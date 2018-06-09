@@ -1,0 +1,23 @@
+## Interface: 80000
+## Title: Blizzard Azerite UI
+## Secure: 1
+## LoadOnDemand: 1
+
+AzeriteEmpowedItemDataSource.lua
+
+Blizzard_AzeriteEmpoweredItemUITemplates.xml
+
+AzeritePowerLayoutInfo.lua
+AzeritePowerModelInfo.lua
+
+AzeriteEmpoweredItemPowerMixin.lua
+AzeriteEmpoweredItemPowerMixin.xml
+
+AzeriteEmpoweredItemTierMixin.xml
+AzeriteEmpoweredItemTierMixin.lua
+
+AzeriteEmpoweredItemSlotMixin.xml
+AzeriteEmpoweredItemSlotMixin.lua
+
+Blizzard_AzeriteEmpoweredItemUI.lua
+Blizzard_AzeriteEmpoweredItemUI.xml
