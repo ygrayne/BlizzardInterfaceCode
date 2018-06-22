@@ -19,7 +19,7 @@ local GUILD_EVENT_TEXTURES = {
 };
 
 function CommunitiesGuildNewsFrame_OnLoad(self)
-	self:RegisterEvent("PLAYER_ENTERING_WORLD");
+	QueryGuildNews();
 	self:RegisterEvent("GUILD_NEWS_UPDATE");
 	self:RegisterEvent("GUILD_MOTD");
 	self:RegisterEvent("GUILD_ROSTER_UPDATE");
@@ -47,9 +47,7 @@ function CommunitiesGuildNewsFrame_OnHide(self)
 end
 
 function CommunitiesGuildNewsFrame_OnEvent(self, event)
-	if ( event == "PLAYER_ENTERING_WORLD" ) then
-		QueryGuildNews();
-	elseif ( self:IsShown() ) then
+	if ( self:IsShown() ) then
 		CommunitiesGuildNews_Update(self);
 	end
 end
@@ -156,7 +154,15 @@ end
 local SIX_DAYS = 6 * 24 * 60 * 60		-- time in seconds
 function CommunitiesGuildNewsButton_SetEvent( button, event_id )
 	local today = date("*t");
-	local month, day, weekday, hour, minute, eventType, title, calendarType, texture = C_Calendar.GetGuildEventInfo(event_id);
+	local guildEventInfo  = C_Calendar.GetGuildEventInfo(event_id);
+	local day = guildEventInfo.monthDay;
+	local month = guildEventInfo.month;
+	local weekday = guildEventInfo.weekday;
+	local hour = guildEventInfo.hour;
+	local minute = guildEventInfo.minute;
+	local title = guildEventInfo.title;
+	local texture = guildEventInfo.texture;
+	
 	local displayTime = GameTime_GetFormattedTime(hour, minute, true);
 	local displayDay;
 	
@@ -304,6 +310,18 @@ end
 
 function CommunitiesGuildNewsButton_AnchorTooltip(self)
 	GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
+end
+
+
+function CommunitiesGuildEventButton_OnClick(self, button)
+	if ( button == "LeftButton" ) then
+		if ( CalendarFrame ) then
+			CalendarFrame_OpenToGuildEventIndex(self.index);
+		else
+			ToggleCalendar();
+			CalendarFrame_OpenToGuildEventIndex(self.index);
+		end
+	end
 end
 
 function CommunitiesGuildNewsButton_OnClick(self, button)

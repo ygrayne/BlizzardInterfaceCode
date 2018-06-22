@@ -36,6 +36,20 @@ local Map =
 			},
 		},
 		{
+			Name = "GetBountySetIDForMap",
+			Type = "Function",
+
+			Arguments =
+			{
+				{ Name = "uiMapID", Type = "number", Nilable = false },
+			},
+
+			Returns =
+			{
+				{ Name = "bountySetID", Type = "number", Nilable = false },
+			},
+		},
+		{
 			Name = "GetFallbackWorldMapID",
 			Type = "Function",
 
@@ -187,6 +201,7 @@ local Map =
 			Returns =
 			{
 				{ Name = "fileDataID", Type = "number", Nilable = false },
+				{ Name = "atlasID", Type = "string", Nilable = false },
 				{ Name = "texturePercentageX", Type = "number", Nilable = false },
 				{ Name = "texturePercentageY", Type = "number", Nilable = false },
 				{ Name = "textureX", Type = "number", Nilable = false },

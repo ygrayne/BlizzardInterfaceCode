@@ -370,7 +370,7 @@ GAME_TOOLTIP_BACKDROP_STYLE_AZERITE_ITEM = {
 	bgFile = "Interface/Tooltips/UI-Tooltip-Background-Azerite",
 	edgeFile = "Interface/Tooltips/UI-Tooltip-Border-Azerite",
 	tile = true,
-	tileEdge = true,
+	tileEdge = false,
 	tileSize = 16,
 	edgeSize = 19,
 	insets = { left = 4, right = 4, top = 4, bottom = 4 },
@@ -379,6 +379,7 @@ GAME_TOOLTIP_BACKDROP_STYLE_AZERITE_ITEM = {
 	backdropColor = TOOLTIP_AZERITE_BACKGROUND_COLOR,
 
 	overlayAtlasTop = "AzeriteTooltip-Topper";
+	overlayAtlasTopScale = .75,
 	overlayAtlasBottom = "AzeriteTooltip-Bottom";
 };
 
@@ -390,6 +391,7 @@ function GameTooltip_SetBackdropStyle(self, style)
 	if self.TopOverlay then
 		if style.overlayAtlasTop then
 			self.TopOverlay:SetAtlas(style.overlayAtlasTop, true);
+			self.TopOverlay:SetScale(style.overlayAtlasTopScale or 1.0);
 			self.TopOverlay:Show();
 		else
 			self.TopOverlay:Hide();
@@ -399,6 +401,7 @@ function GameTooltip_SetBackdropStyle(self, style)
 	if self.BottomOverlay then
 		if style.overlayAtlasBottom then
 			self.BottomOverlay:SetAtlas(style.overlayAtlasBottom, true);
+			self.BottomOverlay:SetScale(style.overlayAtlasBottomScale or 1.0);
 			self.BottomOverlay:Show();
 		else
 			self.BottomOverlay:Hide();
@@ -631,7 +634,7 @@ function GameTooltip_ShowCompareSpell(self, anchorFrame)
 		return false;
 	end
 
-	local owningItemSource = AzeriteEmpowedItemDataSource:CreateFromFromItemLink(owningItemLink);
+	local owningItemSource = AzeriteEmpoweredItemDataSource:CreateFromFromItemLink(owningItemLink);
 	local sourceItem = owningItemSource:GetItem();
 	if not sourceItem:IsItemDataCached() then
 		-- We'll try again later
@@ -643,7 +646,7 @@ function GameTooltip_ShowCompareSpell(self, anchorFrame)
 		return false;
 	end
 
-	local equippedItemSource = AzeriteEmpowedItemDataSource:CreateFromFromItemLocation(equippedItemLocation);
+	local equippedItemSource = AzeriteEmpoweredItemDataSource:CreateFromItemLocation(equippedItemLocation);
 	local equippedItem = equippedItemSource:GetItem(equippedItemLocation);
 	if not equippedItem:IsItemDataCached() then
 		-- We'll try again later
@@ -761,11 +764,11 @@ local function WidgetLayout(widgetContainer, sortedWidgets)
 
 	for index, widgetFrame in ipairs(sortedWidgets) do
 		if ( index == 1 ) then
-			widgetFrame:SetPoint("TOP", widgetContainer, "TOP", 0, 0);
+			widgetFrame:SetPoint("TOPLEFT", widgetContainer, "TOPLEFT", 0, 0);
 			widgetsHeight = widgetsHeight + widgetFrame:GetHeight();
 		else
 			local relative = sortedWidgets[index - 1];
-			widgetFrame:SetPoint("TOP", relative, "BOTTOM", 0, -10);
+			widgetFrame:SetPoint("TOPLEFT", relative, "BOTTOMLEFT", 0, -10);
 			widgetsHeight = widgetsHeight + widgetFrame:GetHeight() + 10;
 		end
 

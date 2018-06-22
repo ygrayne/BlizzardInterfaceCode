@@ -1,0 +1,20 @@
+{
+	"folders":
+	[
+		{
+			"path": "FrameXML"
+		},
+		{
+			"path": "SharedXML"
+		},
+		{
+			"path": "AddOns"
+		},
+		{
+			"path": "GlueXML"
+		},
+		{
+			"path": "LCDXML"
+		}
+	]
+}

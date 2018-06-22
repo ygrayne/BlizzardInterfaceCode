@@ -94,8 +94,10 @@
 			</Layer>
 		</Layers>
 		<Scripts>
+			<OnLoad method="OnLoad"/>
 			<OnEnter method="OnEnter"/>
 			<OnLeave method="OnLeave"/>
+			<OnHide method="OnHide"/>
 			<OnUpdate>
 				CursorOnUpdate(self, elapsed);
 			</OnUpdate>

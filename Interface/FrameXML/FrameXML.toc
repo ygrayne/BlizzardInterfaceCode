@@ -6,6 +6,7 @@
 
 ## add snippets independent of modules here
 ..\SharedXML\Util.lua
+..\SharedXML\AnchorUtil.xml
 ..\SharedXML\EasingUtil.lua
 ..\SharedXML\BindingUtil.lua
 ..\SharedXML\FrameUtil.lua
@@ -91,7 +92,6 @@ WardrobeOutfits.xml
 DressUpFrames.xml
 ItemButtonTemplate.xml
 NavigationBar.xml
-SparkleFrame.xml
 ..\SharedXML\HybridScrollFrame.lua
 ..\SharedXML\HybridScrollFrame.xml
 GameMenuFrame.xml
@@ -254,6 +254,7 @@ AzeriteIslandsToast.xml
 ..\SharedXML\ModelPreviewFrame.xml
 SplashFrame.xml
 QuestChoiceFrameMixin.lua
+AzeriteEmpoweredItemDataSource.lua
 
 #Save off whatever we need available unmodified.
 SecureCapsule.lua

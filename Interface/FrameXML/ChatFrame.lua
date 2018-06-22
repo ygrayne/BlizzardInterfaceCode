@@ -771,19 +771,22 @@ function ChatFrame_ResolvePrefixedChannelName(communityChannel)
 	return prefix..ChatFrame_ResolveChannelName(communityChannel);
 end
 
+function ChatFrame_GetCommunityAndStreamFromChannel(communityChannel)
+	local clubId, streamId = communityChannel:match("(%d+)%:(%d+)");
+	return tonumber(clubId), tonumber(streamId);
+end
+
 function ChatFrame_ResolveChannelName(communityChannel)
-	local communityId, streamId = communityChannel:match("(%d+)%:(%d+)");
-	if not communityId or not streamId then
+	local clubId, streamId = ChatFrame_GetCommunityAndStreamFromChannel(communityChannel);
+	if not clubId or not streamId then
 		return communityChannel;
 	end
 
-	local clubInfo = C_Club.GetClubInfo(communityId);
-	local streamInfo = C_Club.GetStreamInfo(communityId, streamId);
+	local clubInfo = C_Club.GetClubInfo(clubId);
+	local streamInfo = C_Club.GetStreamInfo(clubId, streamId);
 	local streamName = streamInfo and ChatFrame_TruncateToMaxLength(streamInfo.name, MAX_COMMUNITY_NAME_LENGTH) or "";
 
-	-- TODO:: This doesn't really localize properly yet since you could be playing in a language different than
-	-- the club was created in.
-	if streamName == COMMUNITIES_DEFAULT_CHANNEL_NAME then
+	if streamInfo.streamType == Enum.ClubStreamType.General then
 		local communityName = clubInfo and ChatFrame_TruncateToMaxLength(clubInfo.shortName or clubInfo.name, MAX_COMMUNITY_NAME_LENGTH_NO_CHANNEL) or "";
 		return communityName;
 	else
@@ -2338,6 +2341,7 @@ SlashCmdList["EVENTTRACE"] = function(msg)
 end
 
 SlashCmdList["TABLEINSPECT"] = function(msg)
+	forceinsecure();
 	UIParentLoadAddOn("Blizzard_DebugTools");
 
 	local focusedTable = nil;
@@ -2714,6 +2718,10 @@ function ChatFrame_AddCommunitiesChannel(chatFrame, clubId, streamId)
 	chatFrame:AddMessage(COMMUNITIES_CHANNEL_ADDED_TO_CHAT_WINDOW:format(channelIndex, ChatFrame_ResolveChannelName(channelName)), DEFAULT_CHAT_CHANNEL_COLOR:GetRGB());
 end
 
+function ChatFrame_CanAddChannel()
+	return C_ChatInfo.GetNumActiveChannels() < MAX_WOW_CHAT_CHANNELS;
+end
+
 function ChatFrame_AddChannel(chatFrame, channel)
 	local channelIndex = nil;
 	local zoneChannel = AddChatWindowChannel(chatFrame:GetID(), channel);
@@ -2994,7 +3002,7 @@ function GetColoredName(event, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, a
 		arg2 = Ambiguate(arg2, "none")
 	end
 
-	if ( info and info.colorNameByClass and arg12 ) then
+	if ( arg12 and info and Chat_ShouldColorChatByClass(info) ) then
 		local localizedClass, englishClass, localizedRace, englishRace, sex = GetPlayerInfoByGUID(arg12)
 
 		if ( englishClass ) then
@@ -4931,6 +4939,23 @@ function ChatChannelDropDown_Initialize()
 	info.isTitle = true;
 	UIDropDownMenu_AddButton(info, 1);
 
+	local clubId, streamId = ChatFrame_GetCommunityAndStreamFromChannel(frame.chatName);
+	if clubId and streamId and C_Club.IsEnabled() then
+		info = UIDropDownMenu_CreateInfo();
+		info.text = CHAT_CHANNEL_DROP_DOWN_OPEN_COMMUNITIES_FRAME;
+		info.notCheckable = true;
+		info.func = function ()
+			if not CommunitiesFrame or not CommunitiesFrame:IsShown() then
+				ToggleCommunitiesFrame();
+			end
+			
+			CommunitiesFrame:SelectStream(clubId, streamId);
+			CommunitiesFrame:SelectClub(clubId);
+		end;
+		
+		UIDropDownMenu_AddButton(info);
+	end
+
 	info = UIDropDownMenu_CreateInfo();
 
 	info.text = MOVE_TO_NEW_WINDOW;
@@ -5015,6 +5040,12 @@ end
 
 function ChatChannelDropDown_PopInChat(self, chatType, chatTarget)
 	--PopOutChat_PopInChat(chatType, chatTarget);
+end
+
+function Chat_ShouldColorChatByClass(chatTypeInfo)
+	local override = ChatClassColorOverrideShown();
+	local colorByClass = info and info.colorNameByClass;
+	return override or (override == nil and colorByClass);
 end
 
 function Chat_GetColoredChatName(chatType, chatTarget)

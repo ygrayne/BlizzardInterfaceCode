@@ -1,6 +1,6 @@
 local ISLANDS_QUEUE_WIDGET_SET_ID = 127; 
-local ISLANDS_QUEUE_LEFT_CARD_ROTATION = math.rad(-4.91);
-local ISLANDS_QUEUE_RIGHT_CARD_ROTATION = math.rad(1.15); 
+local ISLANDS_QUEUE_LEFT_CARD_ROTATION = math.rad(4.91);
+local ISLANDS_QUEUE_RIGHT_CARD_ROTATION = math.rad(-1.15); 
 IslandsQueueWeeklyQuestMixin = { }; 
 
 local ButtonTooltips = 
@@ -9,6 +9,14 @@ local ButtonTooltips =
 	PLAYER_DIFFICULTY2,
 	PLAYER_DIFFICULTY6,
 	PVP_FLAG,	
+};
+
+local ButtonPressedSounds = 
+{
+	SOUNDKIT.UI_80_ISLANDS_TABLE_FIND_GROUP,
+	SOUNDKIT.UI_80_ISLANDS_TABLE_FIND_GROUP,
+	SOUNDKIT.UI_80_ISLANDS_TABLE_FIND_GROUP,
+	SOUNDKIT.UI_80_ISLANDS_TABLE_FIND_GROUP_PVP,
 };
 
 function IslandsQueueWeeklyQuestMixin:OnEvent(event, ...)
@@ -93,13 +101,30 @@ end
 function IslandsQueueFrameMixin:OnLoad()
 	SetPortraitToTexture(self.portrait, "Interface\\Icons\\icon_treasuremap");	
 	UIWidgetManager:RegisterWidgetSetContainer(ISLANDS_QUEUE_WIDGET_SET_ID, self.IslandCardsFrame, WidgetsLayout);
+	self:RegisterEvent("ISLANDS_QUEUE_CLOSE"); 
+end
+
+function IslandsQueueFrameMixin:OnEvent(event, ...) 
+	if (event == "ISLANDS_QUEUE_CLOSE") then
+		HideUIPanel(self);
+	end
 end
 
 function IslandsQueueFrameMixin:OnShow()
+	PlaySound(SOUNDKIT.UI_80_ISLANDS_TABLE_OPEN);
 	self.DifficultySelectorFrame:SetInitialDifficulty(); 
 end
 
+function IslandsQueueFrameMixin:OnHide()
+	PlaySound(SOUNDKIT.UI_80_ISLANDS_TABLE_CLOSE);
+	C_IslandsQueue.CloseIslandsQueueScreen();
+end
+
 IslandsQueueFrameDifficultyMixin = { }; 
+
+function IslandsQueueFrameDifficultyMixin:OnQueueClick()
+	C_IslandsQueue.QueueForIsland(self:GetActiveDifficulty());
+end
 
 function IslandsQueueFrameDifficultyMixin:OnLoad()
 	self.difficultyPool = CreateFramePool("BUTTON", self, "IslandsQueueFrameDifficultyButtonTemplate");
@@ -127,6 +152,7 @@ function IslandsQueueFrameDifficultyMixin:RefreshDifficultyButtons()
 		self.previousDifficulty = button; 
 		button.difficulty = islandDifficultyId;
 		button.tooltipText = ButtonTooltips[buttonIndex]; 
+		button.soundkitID = ButtonPressedSounds[buttonIndex];
 		button:Show(); 
 	end
 end
@@ -141,4 +167,8 @@ function IslandsQueueFrameDifficultyMixin:SetActiveDifficulty(difficultyButton)
 			button.SelectedTexture:SetShown(false);
 		end
 	end
+end
+
+function IslandsQueueFrameDifficultyMixin:GetActiveDifficulty()
+	return self.activeDifficulty; 
 end

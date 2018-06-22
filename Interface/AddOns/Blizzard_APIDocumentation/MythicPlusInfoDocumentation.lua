@@ -16,6 +16,24 @@ local MythicPlusInfo =
 			},
 		},
 		{
+			Name = "GetOwnedKeystoneChallengeMapID",
+			Type = "Function",
+
+			Returns =
+			{
+				{ Name = "challengeMapID", Type = "number", Nilable = false },
+			},
+		},
+		{
+			Name = "GetOwnedKeystoneLevel",
+			Type = "Function",
+
+			Returns =
+			{
+				{ Name = "keyStoneLevel", Type = "number", Nilable = false },
+			},
+		},
+		{
 			Name = "GetRewardLevelForDifficultyLevel",
 			Type = "Function",
 
@@ -75,6 +93,15 @@ local MythicPlusInfo =
 				{ Name = "currentWeekBestLevel", Type = "number", Nilable = false },
 				{ Name = "weeklyRewardLevel", Type = "number", Nilable = false },
 				{ Name = "nextDifficultyWeeklyRewardLevel", Type = "number", Nilable = false },
+			},
+		},
+		{
+			Name = "IsMythicPlusActive",
+			Type = "Function",
+
+			Returns =
+			{
+				{ Name = "isMythicPlusActive", Type = "bool", Nilable = false },
 			},
 		},
 		{
@@ -150,8 +177,9 @@ local MythicPlusInfo =
 			Type = "Structure",
 			Fields =
 			{
-				{ Name = "name", Type = "string", Nilable = false },
+				{ Name = "name", Type = "string", Nilable = true },
 				{ Name = "specID", Type = "number", Nilable = false },
+				{ Name = "classID", Type = "number", Nilable = false },
 			},
 		},
 	},
