@@ -61,6 +61,9 @@
 	},
 	"file_history":
 	[
+		"/C/Program Files (x86)/World of Warcraft Beta/BlizzardInterfaceCode/Interface/FrameXML/AutoComplete.lua",
+		"/C/Program Files (x86)/World of Warcraft Beta/BlizzardInterfaceCode/Interface/AddOns/Blizzard_BlackMarketUI/Blizzard_BlackMarketUI.xml",
+		"/C/Program Files (x86)/World of Warcraft Beta/BlizzardInterfaceCode/Interface/FrameXML/QuestMapFrame.xml",
 		"/C/Program Files (x86)/World of Warcraft Beta/Interface/AddOns/APIInterface/APIInterface.lua",
 		"/C/Program Files (x86)/World of Warcraft Beta/Interface/AddOns/AshaAPI/AshaAPI.lua",
 		"/C/Program Files (x86)/World of Warcraft Beta/BlizzardInterfaceCode/Interface/AddOns/Blizzard_APIDocumentation/Blizzard_APIDocumentation.lua",
@@ -81,6 +84,7 @@
 		"height": 105.0,
 		"where_history":
 		[
+			"C:\\Program Files (x86)\\World of Warcraft Beta\\BlizzardInterfaceCode",
 			""
 		]
 	},
@@ -89,6 +93,35 @@
 		"case_sensitive": true,
 		"find_history":
 		[
+			"OptionsCheckButtonTemplate",
+			"UICheckButtonTemplate",
+			"CheckBox",
+			"SearchBoxTemplate",
+			"AUTOCOMPLETE_SIMPLE_REGEX",
+			"editbox",
+			"hightlight text",
+			"hightlighttext",
+			"highlight",
+			"TableAttributeDisplay",
+			"scrollChildHeight",
+			"scrollFrameHeight",
+			"FauxScrollFrame_Update",
+			"ScrollFrame_OnLoad",
+			"UIPanelScrollFrameTemplate",
+			"UIPanelScrollFrameCodeTemplate",
+			"UIPanelScrollFrameTemplate",
+			"FauxScrollFrameTemplate",
+			"UIPanelCloseButton",
+			"TableAttributeDisplay",
+			"SearchBoxTemplateClearButton_OnClick",
+			"SearchBoxTemplate",
+			"QuestMapDetailsScrollFrame",
+			"SecureCapsuleGet",
+			"Import",
+			"ScrollingEdit_OnTextChanged",
+			"SearchBoxTemplate",
+			"BagSearchBoxTemplate",
+			"BagItemSearch",
 			"FauxScrollFrame_OnVerticalScroll",
 			"CreateFrame",
 			"CreateFRame",
