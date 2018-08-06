@@ -277,8 +277,10 @@ function ChannelFrameMixin:QueueVoiceChannelCommand(cmd)
 		self.queuedVoiceChannelCommands = {};
 	end
 
-	table.insert(self.queuedVoiceChannelCommands, cmd);
-	C_VoiceChat.Login(); -- May already be in-flight, doesn't matter.
+	local statusCode = C_VoiceChat.Login();
+	if statusCode == Enum.VoiceChatStatusCode.OperationPending then
+		table.insert(self.queuedVoiceChannelCommands, cmd);
+	end
 end
 
 function ChannelFrameMixin:TryExecuteCommand(cmd)
@@ -492,10 +494,13 @@ function ChannelFrameMixin:ShowChannelManagementTip(channelID)
 	local channel = C_VoiceChat.GetChannel(channelID);
 	if channel and GetPartyCategoryFromChannelType(channel.channelType) ~= nil then
 		local atlas = CreateAtlasMarkup("voicechat-channellist-icon-headphone-off");
-		local useNotBound = true;
+		local useNotBound = false;
 		local useParentheses = true;
-		local announceText = VOICE_CHAT_CHANNEL_MANAGEMENT_TIP:format(atlas, GetBindingKeyForAction("TOGGLECHATTAB", useNotBound, useParentheses));
-		ChatFrame_DisplaySystemMessageInPrimary(announceText);
+		local bindingText = GetBindingKeyForAction("TOGGLECHATTAB", useNotBound, useParentheses);
+		if bindingText and bindingText ~= "" then
+			local announceText = VOICE_CHAT_CHANNEL_MANAGEMENT_TIP:format(atlas, bindingText);
+			ChatFrame_DisplaySystemMessageInPrimary(announceText);
+		end
 	end
 end
 
@@ -506,6 +511,7 @@ function ChannelFrameMixin:OnVoiceChannelActivated(voiceChannelID)
 end
 
 function ChannelFrameMixin:OnVoiceChannelDeactivated(voiceChannelID)
+	ChatFrame_DisplaySystemMessageInPrimary(VOICE_CHAT_CHANNEL_ANNOUNCE_PLAYER_LEFT);
 	self:SetVoiceChannelActiveState(voiceChannelID, false);
 	self:CheckChannelAnnounceState(voiceChannelID, "inactive");
 	PlaySound(SOUNDKIT.UI_VOICECHAT_LEAVECHANNEL);
@@ -574,11 +580,7 @@ function ChannelFrameMixin:OnCommunityFavoriteChanged(clubId)
 end
 
 function ChannelFrameMixin:OnMemberActiveStateChanged(memberID, channelID, isActive)
-	if C_VoiceChat.IsMemberLocalPlayer(memberID, channelID) then
-		if not isActive then
-			ChatFrame_DisplaySystemMessageInPrimary(VOICE_CHAT_CHANNEL_ANNOUNCE_PLAYER_LEFT);
-		end
-	else
+	if not C_VoiceChat.IsMemberLocalPlayer(memberID, channelID) then
 		local channel = C_VoiceChat.GetChannel(channelID);
 		if channel and channel.isActive then
 			local memberName = C_VoiceChat.GetMemberName(memberID, channelID) or "";

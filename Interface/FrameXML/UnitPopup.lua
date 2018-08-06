@@ -92,9 +92,9 @@ UnitPopupButtons = {
 	["LEGACY_RAID_DIFFICULTY1"] = { text = RAID_DIFFICULTY1, checkable = 1, difficultyID = 3 },
 	["LEGACY_RAID_DIFFICULTY2"] = { text = RAID_DIFFICULTY2, checkable = 1, difficultyID = 4 },
 
-	["PVP_FLAG"] = { text = PVP_FLAG, nested = 1 },
-	["PVP_ENABLE"] = { text = ENABLE, checkable = 1, checkable = 1 },
-	["PVP_DISABLE"] = { text = DISABLE, checkable = 1, checkable = 1 },
+	["PVP_FLAG"] = { text = PVP_FLAG, nested = 1, tooltipWhileDisabled = true, noTooltipWhileEnabled = true, tooltipOnButton = true },
+	["PVP_ENABLE"] = { text = ENABLE, checkable = 1 },
+	["PVP_DISABLE"] = { text = DISABLE, checkable = 1 },
 
 	["ITEM_QUALITY2_DESC"] = { text = ITEM_QUALITY2_DESC, color = ITEM_QUALITY_COLORS[2], checkable = 1 },
 	["ITEM_QUALITY3_DESC"] = { text = ITEM_QUALITY3_DESC, color = ITEM_QUALITY_COLORS[3], checkable = 1 },
@@ -579,7 +579,7 @@ end
 
 function UnitPopup_AddDropDownTitle(unit, name, userData)
 	if ( unit or name ) then
-		info = UIDropDownMenu_CreateInfo();
+		local info = UIDropDownMenu_CreateInfo();
 
 		local titleText = name;
 		if not titleText and unit then
@@ -634,6 +634,21 @@ function UnitPopup_GetOverrideIsChecked(command, currentIsChecked, dropdownMenu)
 
 	-- If there was no override, use the current value
 	return currentIsChecked;
+end
+
+function UnitPopup_UpdateButtonInfo(info)
+	if info.value == "PVP_FLAG" then
+		if C_PvP.IsWarModeActive() or (TALENT_WAR_MODE_BUTTON and TALENT_WAR_MODE_BUTTON:GetWarModeDesired()) then
+			info.hasArrow = nil;
+			info.tooltipTitle = PVP_LABEL_WAR_MODE;
+			info.tooltipInstruction = PVP_WAR_MODE_ENABLED;
+			if (not C_PvP.CanToggleWarMode()) then
+				info.tooltipWarning = UnitFactionGroup("player") == PLAYER_FACTION_GROUP[0] and PVP_WAR_MODE_NOT_NOW_HORDE or PVP_WAR_MODE_NOT_NOW_ALLIANCE;
+			end
+		else
+			info.hasArrow = true;
+		end
+	end
 end
 
 function UnitPopup_AddDropDownButton(info, dropdownMenu, cntButton, buttonIndex, level)
@@ -728,6 +743,14 @@ function UnitPopup_AddDropDownButton(info, dropdownMenu, cntButton, buttonIndex,
 		info.customFrame:SetContextData(dropdownMenu);
 	end
 
+	info.tooltipWhileDisabled = cntButton.tooltipWhileDisabled;
+	info.noTooltipWhileEnabled = cntButton.noTooltipWhileEnabled;
+	info.tooltipOnButton = cntButton.tooltipOnButton;
+	info.tooltipInstruction = cntButton.tooltipInstruction;
+	info.tooltipWarning = cntButton.tooltipWarning;
+
+	UnitPopup_UpdateButtonInfo(info);
+
 	UIDropDownMenu_AddButton(info, level);
 end
 
@@ -797,7 +820,12 @@ local function UnitPopup_IsPlayerMobile(menu)
 end
 
 local function UnitPopup_GetIsLocalPlayer(menu)
-	if menu.isSelf or menu.guid and C_AccountInfo.IsGUIDRelatedToLocalAccount(menu.guid) then
+	if menu.isSelf then
+		return true;
+	end
+
+	local guid = UnitPopup_GetGUID(menu);
+	if guid and C_AccountInfo.IsGUIDRelatedToLocalAccount(guid) then
 		return true;
 	end
 
@@ -826,11 +854,7 @@ function UnitPopup_HideButtons ()
 	local haveBattleTag = UnitPopup_HasBattleTag();
 	local isOffline = UnitPopup_IsPlayerOffline(dropdownMenu);
 
-	dropdownMenu.guid = guid;
-	dropdownMenu.playerLocation = playerLocation;
-
 	local isLocalPlayer = UnitPopup_GetIsLocalPlayer(dropdownMenu);
-	dropdownMenu.isLocalPlayer = isLocalPlayer;
 
 	for index, value in ipairs(UnitPopupMenus[UIDROPDOWNMENU_MENU_VALUE] or UnitPopupMenus[dropdownMenu.which]) do
 		local shown = true;
@@ -951,7 +975,7 @@ function UnitPopup_HideButtons ()
 				shown = false;
 			end
 		elseif ( value == "REPORT_PLAYER" ) then
-			if not playerLocation or not C_ChatInfo.CanReportPlayer(playerLocation) then
+			if not playerLocation or not playerLocation:IsValid() or not C_ChatInfo.CanReportPlayer(playerLocation) then
 				shown = false;
 			end
 		elseif ( value == "REPORT_SPAM" ) then
@@ -1390,8 +1414,8 @@ function UnitPopup_OnUpdate (elapsed)
 						if ( not inParty ) then
 							enable = false;
 						end
-					elseif ( value == "PVP_ENABLE" or value == "PVP_DISABLE") then
-						if ( C_PvP.IsWarModeActive() ) then
+					elseif (value == "PVP_FLAG" or value == "PVP_ENABLE" or value == "PVP_DISABLE") then
+						if ( C_PvP.IsWarModeActive() or (TALENT_WAR_MODE_BUTTON and TALENT_WAR_MODE_BUTTON:GetWarModeDesired()) ) then
 							enable = false;
 						end
 					elseif ( value == "UNINVITE" ) then
@@ -1569,6 +1593,9 @@ function UnitPopup_OnClick (self)
 		fullname = name.."-"..server;
 	end
 
+	local guid = UnitPopup_GetGUID(dropdownFrame);
+	local playerLocation = UnitPopup_TryCreatePlayerLocation(dropdownFrame, guid);
+
 	local inParty = IsInGroup();
 	local isLeader = UnitIsGroupLeader("player");
 	local isAssistant = UnitIsGroupAssistant("player");
@@ -1590,13 +1617,13 @@ function UnitPopup_OnClick (self)
 	elseif ( button == "IGNORE" ) then
 		AddOrDelIgnore(fullname);
 	elseif ( button == "REPORT_SPAM" ) then
-		PlayerReportFrame:InitiateReport(PLAYER_REPORT_TYPE_SPAM, fullname, dropdownFrame.playerLocation)
+		PlayerReportFrame:InitiateReport(PLAYER_REPORT_TYPE_SPAM, fullname, playerLocation)
 	elseif ( button == "REPORT_BAD_LANGUAGE" ) then
-		PlayerReportFrame:InitiateReport(PLAYER_REPORT_TYPE_LANGUAGE, fullname, dropdownFrame.playerLocation)
+		PlayerReportFrame:InitiateReport(PLAYER_REPORT_TYPE_LANGUAGE, fullname, playerLocation)
 	elseif ( button == "REPORT_BAD_NAME" ) then
-		PlayerReportFrame:InitiateReport(PLAYER_REPORT_TYPE_BAD_PLAYER_NAME, fullname, dropdownFrame.playerLocation)
+		PlayerReportFrame:InitiateReport(PLAYER_REPORT_TYPE_BAD_PLAYER_NAME, fullname, playerLocation)
 	elseif ( button == "REPORT_BAD_GUILD_NAME" ) then
-		PlayerReportFrame:InitiateReport(PLAYER_REPORT_TYPE_BAD_GUILD_NAME, fullname, dropdownFrame.playerLocation)
+		PlayerReportFrame:InitiateReport(PLAYER_REPORT_TYPE_BAD_GUILD_NAME, fullname, playerLocation)
 	elseif ( button == "REPORT_PET" ) then
 		SetPendingReportPetTarget(unit);
 		StaticPopup_Show("CONFIRM_REPORT_PET_NAME", fullname);
@@ -1604,7 +1631,7 @@ function UnitPopup_OnClick (self)
 		C_PetBattles.SetPendingReportTargetFromUnit(unit);
 		StaticPopup_Show("CONFIRM_REPORT_BATTLEPET_NAME", fullname);
 	elseif ( button == "REPORT_CHEATING" ) then
-		HelpFrame_ShowReportCheatingDialog(dropdownFrame.playerLocation);
+		HelpFrame_ShowReportCheatingDialog(playerLocation);
 	elseif ( button == "POP_OUT_CHAT" ) then
 		FCF_OpenTemporaryWindow(dropdownFrame.chatType, dropdownFrame.chatTarget, dropdownFrame.chatFrame, true);
 	elseif ( button == "DUEL" ) then

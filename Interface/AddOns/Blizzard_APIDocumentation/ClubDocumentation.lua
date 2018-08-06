@@ -48,12 +48,45 @@ local Club =
 			},
 		},
 		{
+			Name = "CanResolvePlayerLocationFromClubMessageData",
+			Type = "Function",
+
+			Arguments =
+			{
+				{ Name = "clubId", Type = "string", Nilable = false },
+				{ Name = "streamId", Type = "string", Nilable = false },
+				{ Name = "epoch", Type = "number", Nilable = false },
+				{ Name = "position", Type = "number", Nilable = false },
+			},
+
+			Returns =
+			{
+				{ Name = "canResolve", Type = "bool", Nilable = false },
+			},
+		},
+		{
 			Name = "ClearAutoAdvanceStreamViewMarker",
 			Type = "Function",
 		},
 		{
 			Name = "ClearClubPresenceSubscription",
 			Type = "Function",
+		},
+		{
+			Name = "CompareBattleNetDisplayName",
+			Type = "Function",
+
+			Arguments =
+			{
+				{ Name = "clubId", Type = "string", Nilable = false },
+				{ Name = "lhsMemberId", Type = "number", Nilable = false },
+				{ Name = "rhsMemberId", Type = "number", Nilable = false },
+			},
+
+			Returns =
+			{
+				{ Name = "comparison", Type = "number", Nilable = false },
+			},
 		},
 		{
 			Name = "CreateClub",

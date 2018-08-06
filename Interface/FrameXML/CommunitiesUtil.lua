@@ -59,15 +59,47 @@ local PRESENCE_SORT_ORDER = {
 };
 
 local function CompareMembers(lhsMemberInfo, rhsMemberInfo)
-	if lhsMemberInfo.presence == rhsMemberInfo.presence then
-		return lhsMemberInfo.memberId < rhsMemberInfo.memberId;
-	else
+	if lhsMemberInfo.presence ~= rhsMemberInfo.presence then
 		return PRESENCE_SORT_ORDER[lhsMemberInfo.presence] < PRESENCE_SORT_ORDER[rhsMemberInfo.presence];
+	elseif lhsMemberInfo.level and rhsMemberInfo.level and lhsMemberInfo.level ~= rhsMemberInfo.level then
+		return lhsMemberInfo.level > rhsMemberInfo.level;
+	elseif lhsMemberInfo.guildRankOrder and rhsMemberInfo.guildRankOrder and lhsMemberInfo.guildRankOrder ~= rhsMemberInfo.guildRankOrder then
+		return lhsMemberInfo.guildRankOrder < rhsMemberInfo.guildRankOrder;
+	elseif lhsMemberInfo.role ~= rhsMemberInfo.role then
+		return lhsMemberInfo.role < rhsMemberInfo.role;
+	elseif lhsMemberInfo.name and rhsMemberInfo.name then
+		return lhsMemberInfo.name < rhsMemberInfo.name;
+	else
+		return lhsMemberInfo.memberId < rhsMemberInfo.memberId;
 	end
 end
 
-function CommunitiesUtil.SortMemberInfo(memberInfoArray)
-	table.sort(memberInfoArray, CompareMembers);
+local function GenerateCompareMemberLambda(clubId)
+	local clubInfo = clubId and C_Club.GetClubInfo(clubId);
+	if clubInfo and clubInfo.clubType == Enum.ClubType.BattleNet then
+		local function CompareBNetMembers(lhsMemberInfo, rhsMemberInfo)
+			if lhsMemberInfo.presence ~= rhsMemberInfo.presence then
+				return PRESENCE_SORT_ORDER[lhsMemberInfo.presence] < PRESENCE_SORT_ORDER[rhsMemberInfo.presence];
+			elseif lhsMemberInfo.role ~= rhsMemberInfo.role then
+				return lhsMemberInfo.role < rhsMemberInfo.role;
+			else
+				local nameComparison = C_Club.CompareBattleNetDisplayName(clubId, lhsMemberInfo.memberId, rhsMemberInfo.memberId);
+				if nameComparison ~= 0 then
+					return nameComparison < 0;
+				else
+					return lhsMemberInfo.memberId < rhsMemberInfo.memberId;
+				end
+			end
+		end
+		
+		return CompareBNetMembers;
+	else
+		return CompareMembers;
+	end
+end
+
+function CommunitiesUtil.SortMemberInfo(clubId, memberInfoArray)
+	table.sort(memberInfoArray, GenerateCompareMemberLambda(clubId));
 	return memberInfoArray;
 end
 
@@ -130,15 +162,16 @@ function CommunitiesUtil.GetAndSortMemberInfo(clubId, streamId, filterOffline)
 	if filterOffline then
 		memberInfoArray = CommunitiesUtil.GetOnlineMembers(memberInfoArray);
 	end
-	memberInfoArray = CommunitiesUtil.SortMemberInfo(memberInfoArray);
+	memberInfoArray = CommunitiesUtil.SortMemberInfo(clubId, memberInfoArray);
 	return memberInfoArray;
 end
 
-function CommunitiesUtil.SortMemberInfoWithOverride(memberInfoArray, overrideCompare)	
+function CommunitiesUtil.SortMemberInfoWithOverride(clubId, memberInfoArray, overrideCompare)
+	local baseCompare = GenerateCompareMemberLambda(clubId);
 	table.sort(memberInfoArray, function (lhsMemberInfo, rhsMemberInfo)
 		local overrideCompareResult = overrideCompare(lhsMemberInfo, rhsMemberInfo);
 		if overrideCompareResult == nil then
-			return CompareMembers(lhsMemberInfo, rhsMemberInfo);
+			return baseCompare(lhsMemberInfo, rhsMemberInfo);
 		else
 			return overrideCompareResult;
 		end
